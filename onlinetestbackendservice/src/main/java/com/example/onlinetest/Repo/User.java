@@ -16,7 +16,7 @@ import lombok.Setter;
 @Table(name = "users")
 @Getter
 @Setter
-public class User extends UserBaseModel {
+public class User extends BaseModel {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id", updatable = false, nullable = false)

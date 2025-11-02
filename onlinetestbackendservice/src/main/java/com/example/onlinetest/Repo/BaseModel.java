@@ -12,8 +12,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @MappedSuperclass
-public abstract class UserBaseModel {
-
+public abstract class BaseModel {
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 

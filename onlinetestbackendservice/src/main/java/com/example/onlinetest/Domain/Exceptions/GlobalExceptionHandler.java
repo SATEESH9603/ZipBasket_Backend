@@ -6,9 +6,11 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import com.example.onlinetest.Domain.Dto.ForgotPasswordResponseDto;
+import com.example.onlinetest.Domain.Dto.ProductsListResponseDto;
 import com.example.onlinetest.Domain.Dto.UpdateUserProfileResponseDto;
 import com.example.onlinetest.Domain.Dto.UserLoginResponseDto;
 import com.example.onlinetest.Domain.Dto.UserRegisterResponseDto;
+import com.example.onlinetest.Domain.ErrorModel;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -16,27 +18,36 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(UserAlreadyExistException.class)
     public ResponseEntity<UserRegisterResponseDto> handleUserAlreadyExistException(UserAlreadyExistException ex) {
         UserRegisterResponseDto userResponse = new UserRegisterResponseDto();
-        userResponse.error.message = ex.getMessage();
-        userResponse.error.errorCode = "USER_ALREADY_EXISTS";
-        userResponse.error.developerMessage = java.util.Arrays.toString(ex.getStackTrace());
+        if (userResponse.error == null) {
+            userResponse.error = new ErrorModel();
+        }
+        userResponse.error.setMessage(ex.getMessage());
+        userResponse.error.setErrorCode("USER_ALREADY_EXISTS");
+        userResponse.error.setDeveloperMessage(java.util.Arrays.toString(ex.getStackTrace()));
         return new ResponseEntity<>(userResponse, HttpStatus.CONFLICT);
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<UserRegisterResponseDto> handleGenericException(Exception ex) {
         UserRegisterResponseDto userResponse = new UserRegisterResponseDto();
-        userResponse.error.message = "An error occurred: " + ex.getMessage();
-        userResponse.error.errorCode = "INTERNAL_SERVER_ERROR";
-        userResponse.error.developerMessage = java.util.Arrays.toString(ex.getStackTrace());
+        if (userResponse.error == null) {
+            userResponse.error = new ErrorModel();
+        }
+        userResponse.error.setMessage("An error occurred: " + ex.getMessage());
+        userResponse.error.setErrorCode("INTERNAL_SERVER_ERROR");
+        userResponse.error.setDeveloperMessage(java.util.Arrays.toString(ex.getStackTrace()));
         return new ResponseEntity<>(userResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler(UserNotFoundException.class)
     public ResponseEntity<UserLoginResponseDto> handleUserNotFoundException(Exception ex) {
         UserLoginResponseDto userResponse = new UserLoginResponseDto();
-        userResponse.error.message = "An error occurred: " + ex.getMessage();
-        userResponse.error.errorCode = "USER_NOT_FOUND";
-        userResponse.error.developerMessage = java.util.Arrays.toString(ex.getStackTrace());
+        if (userResponse.getError() == null) {
+            userResponse.setError(new ErrorModel());
+        }
+        userResponse.getError().setMessage("An error occurred: " + ex.getMessage());
+        userResponse.getError().setErrorCode("USER_NOT_FOUND");
+        userResponse.getError().setDeveloperMessage(java.util.Arrays.toString(ex.getStackTrace()));
         return new ResponseEntity<>(userResponse, HttpStatus.NOT_FOUND);
     }
 
@@ -62,6 +73,19 @@ public class GlobalExceptionHandler {
             setDeveloperMessage(java.util.Arrays.toString(ex.getStackTrace()));
         }});
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler(ProductException.class)
+    public ResponseEntity<ProductsListResponseDto> handleProductException(ProductException ex) {
+        ProductsListResponseDto response = new ProductsListResponseDto();
+        response.setSuccess(false);
+        response.setMessage("Error processing products request");
+        response.setError(new com.example.onlinetest.Domain.ErrorModel(){{
+            setMessage(ex.getMessage());
+            setErrorCode("PRODUCT_ERROR");
+            setDeveloperMessage(java.util.Arrays.toString(ex.getStackTrace()));
+        }});
+        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
 }
