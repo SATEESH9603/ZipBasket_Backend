@@ -6,11 +6,15 @@ import com.example.onlinetest.Domain.Dto.UserLoginResponseDto;
 import com.example.onlinetest.Domain.Dto.UserRegisterRequestDto;
 import com.example.onlinetest.Domain.Dto.UserRegisterResponseDto;
 import com.example.onlinetest.Repo.User;
+import com.example.onlinetest.Repo.Product;
+import com.example.onlinetest.Domain.Dto.ProductDto;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class Mapper {
     public static UserRegisterResponseDto toUserRegisterResponseDto(User user) {
         UserRegisterResponseDto response = new UserRegisterResponseDto();
-        response.user= user;
+        response.setUser(user);
         // Add other fields as necessary
         return response;
     }
@@ -29,8 +33,8 @@ public class Mapper {
     }  
     public static UserLoginResponseDto toUserLoginResponseDto(User user, String token) {
         UserLoginResponseDto response = new UserLoginResponseDto();
-        response.user = user;
-        response.token = token;
+        response.setUser(user);
+        response.setToken(token);
         // Add other fields as necessary
         return response;
     } 
@@ -54,5 +58,13 @@ public class Mapper {
         response.setFirstName(savedUserResponse.getFirstName());
         response.setLastName(savedUserResponse.getLastName());
         return response;
+    }
+
+    // Stream-based mapping for products
+    public static List<ProductDto> toProductDtoList(List<Product> products) {
+        if (products == null) return java.util.Collections.emptyList();
+        return products.stream()
+                       .map(ProductDto::new)
+                       .collect(Collectors.toList());
     }
 }

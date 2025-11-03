@@ -1,6 +1,8 @@
 package com.example.onlinetest.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,21 +11,78 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import com.example.onlinetest.Domain.Dto.CreateProductRequestDto;
+import com.example.onlinetest.Domain.Dto.CreateProductResponseDto;
 import com.example.onlinetest.Domain.Dto.ProductDto;
 import com.example.onlinetest.Domain.Dto.ProductsListResponseDto;
 import com.example.onlinetest.Domain.Exceptions.ProductException;
 import com.example.onlinetest.Repo.Product;
 import com.example.onlinetest.Repo.ProductRepo;
+import com.example.onlinetest.Repo.User;
+import com.example.onlinetest.Repo.UserRepo;
+import com.example.onlinetest.Repo.Category;
 
 @Service
 public class ProductService implements IProductService {
 
     private final ProductRepo productRepo;
+    private final UserRepo userRepo;
     private static final int PAGE_SIZE = 5;
 
     @Autowired
-    public ProductService(ProductRepo productRepo) {
+    public ProductService(ProductRepo productRepo, UserRepo userRepo) {
         this.productRepo = productRepo;
+        this.userRepo = userRepo;
+    }
+
+    @Override
+    public CreateProductResponseDto createProduct(CreateProductRequestDto request) {
+        try {
+            Product p = new Product();
+            if (request.getSellerId() != null && !request.getSellerId().isBlank()) {
+                // try to resolve user by UUID and set as seller
+                try {
+                    UUID uid = UUID.fromString(request.getSellerId());
+                    User user = userRepo.findById(uid).orElse(null);
+                    if (user == null) {
+                        throw new ProductException("Seller with id " + request.getSellerId() + " not found");
+                    }
+                    p.setSeller(user);
+                } catch (IllegalArgumentException iae) {
+                    throw new ProductException("Invalid sellerId format: " + request.getSellerId(), iae);
+                }
+            }
+            p.setName(request.getName());
+            p.setDescription(request.getDescription());
+            if (request.getPrice() != null && !request.getPrice().isBlank()) {
+                p.setPrice(new BigDecimal(request.getPrice()));
+            }
+            p.setCurrency(request.getCurrency());
+            if (request.getQuantity() != null) p.setQuantity(request.getQuantity());
+            p.setSku(request.getSku());
+            if (request.getCategory() != null && !request.getCategory().isBlank()) {
+                try {
+                    p.setCategory(Category.valueOf(request.getCategory().toUpperCase().replace(' ', '_')));
+                } catch (IllegalArgumentException iae) {
+                    throw new ProductException("Invalid category: " + request.getCategory(), iae);
+                }
+            }
+            p.setImages(request.getImages());
+            p.setWeight(request.getWeight());
+            p.setDimensions(request.getDimensions());
+            if (request.getIsActive() != null) p.setActive(request.getIsActive());
+            p.setMetadata(request.getMetadata());
+
+            Product saved = productRepo.save(p);
+
+            CreateProductResponseDto resp = new CreateProductResponseDto();
+            resp.setSuccess(true);
+            resp.setMessage("Product created successfully");
+            resp.setProduct(new ProductDto(saved));
+            return resp;
+        } catch (Exception e) {
+            throw new ProductException("Failed to create product: " + e.getMessage(), e);
+        }
     }
 
     @Override
@@ -34,9 +93,7 @@ public class ProductService implements IProductService {
             PageRequest pageRequest = PageRequest.of(page - 1, PAGE_SIZE, Sort.by(Sort.Direction.DESC, "createdAt"));
             Page<Product> pageResult = productRepo.findAll(pageRequest);
 
-            List<ProductDto> products = pageResult.getContent().stream()
-                .map(ProductDto::new)
-                .collect(Collectors.toList());
+            List<ProductDto> products = com.example.onlinetest.Domain.Mapper.toProductDtoList(pageResult.getContent());
 
             ProductsListResponseDto response = new ProductsListResponseDto();
             response.setSuccess(true);

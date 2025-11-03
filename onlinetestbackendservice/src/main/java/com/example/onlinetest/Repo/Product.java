@@ -1,12 +1,18 @@
 package com.example.onlinetest.Repo;
+
 import java.math.BigDecimal;
 import java.util.UUID;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
@@ -22,9 +28,10 @@ public class Product extends BaseModel {
     @Column(name = "id", updatable = false, nullable = false)
     public UUID id;
 
-    // Reference to seller (stored as UUID to avoid eager entity joins by default)
-    @Column(name = "seller_id", nullable = false)
-    public UUID sellerId;
+    // Reference to seller user
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "seller_id", nullable = false)
+    public User seller;
 
     @Column(name = "name", nullable = false)
     public String name;
@@ -44,8 +51,9 @@ public class Product extends BaseModel {
     @Column(name = "sku", unique = true)
     public String sku;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "category")
-    public String category;
+    public Category category;
 
     // Store image URLs as JSON array or comma-separated values
     @Column(name = "images", columnDefinition = "VARCHAR(MAX)")

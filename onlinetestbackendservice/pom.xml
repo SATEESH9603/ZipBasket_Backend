@@ -67,6 +67,11 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-mail</artifactId>
     </dependency>
+    <!-- Spring Security (required for AccessDeniedException/AuthenticationException types and future security configuration) -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-security</artifactId>
+    </dependency>
 
     <!-- ✅ Only ONE springdoc starter, and on 2.8.x -->
     <dependency>
@@ -85,7 +90,8 @@
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
-      <optional>true</optional>
+      <version>1.18.30</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
@@ -105,6 +111,13 @@
           <compilerArgs>
             <arg>-parameters</arg>
           </compilerArgs>
+          <annotationProcessorPaths>
+            <path>
+              <groupId>org.projectlombok</groupId>
+              <artifactId>lombok</artifactId>
+              <version>1.18.30</version>
+            </path>
+          </annotationProcessorPaths>
         </configuration>
       </plugin>
 

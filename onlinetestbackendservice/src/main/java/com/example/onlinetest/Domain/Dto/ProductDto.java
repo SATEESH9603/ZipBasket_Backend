@@ -29,14 +29,14 @@ public class ProductDto {
 
     public ProductDto(Product p) {
         if (p.getId() != null) this.id = p.getId().toString();
-        if (p.getSellerId() != null) this.sellerId = p.getSellerId().toString();
+        if (p.getSeller() != null && p.getSeller().getId() != null) this.sellerId = p.getSeller().getId().toString();
         this.name = p.getName();
         this.description = p.getDescription();
         this.price = p.getPrice() != null ? p.getPrice().toPlainString() : null;
         this.currency = p.getCurrency();
         this.quantity = p.getQuantity();
         this.sku = p.getSku();
-        this.category = p.getCategory();
+        this.category = p.getCategory() != null ? p.getCategory().name() : null;
         this.images = p.getImages();
         this.weight = p.getWeight();
         this.dimensions = p.getDimensions();

@@ -64,6 +64,20 @@ public class JwtService implements IJwtService {
             .getSubject();
     }
 
+    @Override
+    public String extractRole(String token) {
+        try {
+            Object role = Jwts.parser()
+                .setSigningKey(jwtConfig.getSecret())
+                .parseClaimsJws(token)
+                .getBody()
+                .get("role");
+            return role == null ? null : String.valueOf(role);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to extract role from token", e);
+        }
+    }
+
     private boolean isTokenExpired(String token) {
         // Implementation for checking if the JWT token is expired
         Date expirationDate = Jwts.parser()

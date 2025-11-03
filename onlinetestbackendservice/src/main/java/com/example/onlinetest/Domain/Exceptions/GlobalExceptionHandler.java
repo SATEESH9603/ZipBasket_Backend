@@ -4,7 +4,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 
+import com.example.onlinetest.Domain.Dto.CreateProductResponseDto;
 import com.example.onlinetest.Domain.Dto.ForgotPasswordResponseDto;
 import com.example.onlinetest.Domain.Dto.ProductsListResponseDto;
 import com.example.onlinetest.Domain.Dto.UpdateUserProfileResponseDto;
@@ -12,30 +18,33 @@ import com.example.onlinetest.Domain.Dto.UserLoginResponseDto;
 import com.example.onlinetest.Domain.Dto.UserRegisterResponseDto;
 import com.example.onlinetest.Domain.ErrorModel;
 
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
+
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(UserAlreadyExistException.class)
     public ResponseEntity<UserRegisterResponseDto> handleUserAlreadyExistException(UserAlreadyExistException ex) {
         UserRegisterResponseDto userResponse = new UserRegisterResponseDto();
-        if (userResponse.error == null) {
-            userResponse.error = new ErrorModel();
+        if (userResponse.getError() == null) {
+            userResponse.setError(new ErrorModel());
         }
-        userResponse.error.setMessage(ex.getMessage());
-        userResponse.error.setErrorCode("USER_ALREADY_EXISTS");
-        userResponse.error.setDeveloperMessage(java.util.Arrays.toString(ex.getStackTrace()));
+        userResponse.getError().setMessage(ex.getMessage());
+        userResponse.getError().setErrorCode("USER_ALREADY_EXISTS");
+        userResponse.getError().setDeveloperMessage(java.util.Arrays.toString(ex.getStackTrace()));
         return new ResponseEntity<>(userResponse, HttpStatus.CONFLICT);
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<UserRegisterResponseDto> handleGenericException(Exception ex) {
         UserRegisterResponseDto userResponse = new UserRegisterResponseDto();
-        if (userResponse.error == null) {
-            userResponse.error = new ErrorModel();
+        if (userResponse.getError() == null) {
+            userResponse.setError(new ErrorModel());
         }
-        userResponse.error.setMessage("An error occurred: " + ex.getMessage());
-        userResponse.error.setErrorCode("INTERNAL_SERVER_ERROR");
-        userResponse.error.setDeveloperMessage(java.util.Arrays.toString(ex.getStackTrace()));
+        userResponse.getError().setMessage("An error occurred: " + ex.getMessage());
+        userResponse.getError().setErrorCode("INTERNAL_SERVER_ERROR");
+        userResponse.getError().setDeveloperMessage(java.util.Arrays.toString(ex.getStackTrace()));
         return new ResponseEntity<>(userResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
@@ -86,6 +95,64 @@ public class GlobalExceptionHandler {
             setDeveloperMessage(java.util.Arrays.toString(ex.getStackTrace()));
         }});
         return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    // Validation errors for controller input
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<CreateProductResponseDto> handleValidationException(MethodArgumentNotValidException ex) {
+        CreateProductResponseDto resp = new CreateProductResponseDto();
+        resp.setSuccess(false);
+        String message = ex.getBindingResult().getFieldErrors().stream()
+            .map(fe -> fe.getField() + ": " + fe.getDefaultMessage())
+            .findFirst().orElse(ex.getMessage());
+        resp.setMessage("Validation failed: " + message);
+        resp.setError(new com.example.onlinetest.Domain.ErrorModel(){{
+            setMessage(message);
+            setErrorCode("INVALID_INPUT");
+            setDeveloperMessage(java.util.Arrays.toString(ex.getStackTrace()));
+        }});
+        return new ResponseEntity<>(resp, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<CreateProductResponseDto> handleUnreadableMessage(HttpMessageNotReadableException ex) {
+        CreateProductResponseDto resp = new CreateProductResponseDto();
+        resp.setSuccess(false);
+        resp.setMessage("Malformed JSON request");
+        resp.setError(new com.example.onlinetest.Domain.ErrorModel(){{
+            setMessage("Malformed JSON request: " + ex.getMessage());
+            setErrorCode("MALFORMED_JSON");
+            setDeveloperMessage(java.util.Arrays.toString(ex.getStackTrace()));
+        }});
+        return new ResponseEntity<>(resp, HttpStatus.BAD_REQUEST);
+    }
+
+    // Handle Spring Security access denied (authorization failures)
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<CreateProductResponseDto> handleAccessDenied(AccessDeniedException ex) {
+        CreateProductResponseDto resp = new CreateProductResponseDto();
+        resp.setSuccess(false);
+        resp.setMessage("Forbidden: insufficient permissions");
+        resp.setError(new ErrorModel(){{
+            setMessage("Forbidden: " + ex.getMessage());
+            setErrorCode("FORBIDDEN");
+            setDeveloperMessage(java.util.Arrays.toString(ex.getStackTrace()));
+        }});
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(resp);
+    }
+
+    // Handle authentication failures
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<CreateProductResponseDto> handleAuthenticationException(AuthenticationException ex) {
+        CreateProductResponseDto resp = new CreateProductResponseDto();
+        resp.setSuccess(false);
+        resp.setMessage("Unauthorized: authentication failed");
+        resp.setError(new ErrorModel(){{
+            setMessage("Unauthorized: " + ex.getMessage());
+            setErrorCode("UNAUTHORIZED");
+            setDeveloperMessage(java.util.Arrays.toString(ex.getStackTrace()));
+        }});
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(resp);
     }
 
 }

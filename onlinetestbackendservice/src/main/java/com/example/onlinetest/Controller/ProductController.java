@@ -8,8 +8,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.onlinetest.Domain.Dto.CreateProductRequestDto;
+import com.example.onlinetest.Domain.Dto.CreateProductResponseDto;
 import com.example.onlinetest.Domain.Dto.ProductsListResponseDto;
+import com.example.onlinetest.Repo.UserRepo;
 import com.example.onlinetest.Service.IProductService;
+import com.example.onlinetest.Service.JwtToken.IJwtService;
 
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -22,7 +26,7 @@ public class ProductController {
     private final IProductService productService;
 
     @Autowired
-    public ProductController(IProductService productService) {
+    public ProductController(IProductService productService, IJwtService jwtService, UserRepo userRepo) {
         this.productService = productService;
     }
         
@@ -37,5 +41,15 @@ public class ProductController {
         ProductsListResponseDto response = productService.listProducts(page);
         return new ResponseEntity<>(response, 
             response.isSuccess() ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @io.swagger.v3.oas.annotations.Operation(summary = "Create a new product", description = "Insert product details into catalog")
+    @org.springframework.web.bind.annotation.PostMapping(consumes = "application/json", produces = "application/json")
+    public ResponseEntity<CreateProductResponseDto> createProduct(
+        @org.springframework.web.bind.annotation.RequestBody @jakarta.validation.Valid CreateProductRequestDto request
+    ) {
+        // Authorization and role checks are enforced by JwtAdminFilter before reaching this controller.
+        CreateProductResponseDto response = productService.createProduct(request);
+        return new ResponseEntity<>(response, response.isSuccess() ? HttpStatus.CREATED : HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

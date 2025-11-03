@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 @EnableJpaRepositories(basePackages = "com.example.onlinetest.Repo")
 @EntityScan(basePackages = "com.example.onlinetest.Repo")
 public class OnlinetestbackendserviceApplication {
-
+	
 	public static void main(String[] args) {
 		SpringApplication.run(OnlinetestbackendserviceApplication.class, args);
 	}
