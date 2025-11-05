@@ -6,11 +6,14 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.lang.NonNull;         // <-- use Spring's NonNull
 import org.springframework.stereotype.Repository;
 
 @Repository
 public interface ProductRepo extends JpaRepository<Product, UUID> {
-    // Provide a pagination method that fetches the seller to avoid N+1
+
+    @Override
     @EntityGraph(attributePaths = {"seller"})
-    Page<Product> findAll(Pageable pageable);
+    @NonNull
+    Page<Product> findAll(@NonNull Pageable pageable);
 }

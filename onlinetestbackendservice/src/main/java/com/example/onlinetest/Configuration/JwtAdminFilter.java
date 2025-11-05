@@ -1,21 +1,20 @@
 package com.example.onlinetest.Configuration;
 
 import java.io.IOException;
-import java.util.HashMap;
+
+import org.springframework.http.MediaType;
+import org.springframework.lang.NonNull;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import com.example.onlinetest.Domain.ErrorModel;
+import com.example.onlinetest.Service.JwtToken.IJwtService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
-import org.springframework.http.MediaType;
-import org.springframework.stereotype.Component;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import com.example.onlinetest.Domain.ErrorModel;
-import org.springframework.web.filter.OncePerRequestFilter;
-
-import com.example.onlinetest.Service.JwtToken.IJwtService;
 
 @Component
 public class JwtAdminFilter extends OncePerRequestFilter {
@@ -27,7 +26,7 @@ public class JwtAdminFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+    protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain)
             throws ServletException, IOException {
 
         // Only enforce for POST /api/products

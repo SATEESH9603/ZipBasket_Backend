@@ -2,7 +2,6 @@ package com.example.onlinetest.Controller;
 
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,7 +28,6 @@ public class AdminController {
 
     private final UserRepo userRepo;
 
-    @Autowired
     public AdminController(UserRepo userRepo) {
         this.userRepo = userRepo;
     }

@@ -6,9 +6,6 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.http.converter.HttpMessageNotReadableException;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 
 import com.example.onlinetest.Domain.Dto.CreateProductResponseDto;
 import com.example.onlinetest.Domain.Dto.ForgotPasswordResponseDto;

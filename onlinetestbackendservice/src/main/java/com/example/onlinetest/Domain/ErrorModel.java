@@ -1,11 +1,10 @@
 package com.example.onlinetest.Domain;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Getter;
-import lombok.Setter;
 
-@Getter
-@Setter
+import lombok.Data;
+
+@Data
 @Schema(description = "Error details when an operation fails")
 public class ErrorModel {
     

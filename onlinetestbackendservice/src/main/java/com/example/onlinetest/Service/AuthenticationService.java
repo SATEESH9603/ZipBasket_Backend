@@ -1,6 +1,5 @@
 package com.example.onlinetest.Service;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.onlinetest.Domain.Dto.UserLoginRequestDto;
@@ -19,7 +18,6 @@ public class AuthenticationService implements IUserAuthenticationService {
     private final UserRepo userRepo;
     private final IJwtService jwtService;
     // Constructor injection for UserRepo
-    @Autowired
     public AuthenticationService(UserRepo userRepo, IJwtService jwtService) {
         this.jwtService = jwtService;
         this.userRepo = userRepo;

@@ -2,11 +2,10 @@ package com.example.onlinetest.Domain.Dto;
 
 import com.example.onlinetest.Repo.Product;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
-@Getter
-@Setter
+
+@Data
 public class ProductDto {
     private String id;
     private String sellerId;

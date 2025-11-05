@@ -1,4 +1,4 @@
-package com.example.onlinetest.configuration; // ✅ follow standard lowercase package naming
+package com.example.onlinetest.Configuration; // ✅ follow standard lowercase package naming
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

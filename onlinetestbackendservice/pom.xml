@@ -7,7 +7,7 @@
   <parent>
     <groupId>org.springframework.boot</groupId>
     <artifactId>spring-boot-starter-parent</artifactId>
-    <version>3.5.0</version>
+    <version>3.5.7</version>
     <relativePath/>
   </parent>
 
@@ -15,15 +15,17 @@
   <artifactId>onlinetestbackendservice</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <name>onlinetestbackendservice</name>
-  <description>OnlineTest Service</description>
+  <description>OnlineTest Backend Service</description>
 
   <properties>
+    <!-- Keep the project on Java 17 -->
     <java.version>17</java.version>
+    <lombok.version>1.18.40</lombok.version>
+    <jjwt.version>0.11.5</jjwt.version>
   </properties>
 
-  <!-- No dependencyManagement with spring-framework-bom -->
-
   <dependencies>
+    <!-- Core Spring Boot -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
@@ -39,60 +41,67 @@
       <artifactId>spring-boot-starter-data-jpa</artifactId>
     </dependency>
 
+    <!-- SQL Server Driver -->
     <dependency>
       <groupId>com.microsoft.sqlserver</groupId>
       <artifactId>mssql-jdbc</artifactId>
+      <!-- optional version pin: <version>12.6.1.jre17</version> -->
     </dependency>
 
     <!-- JWT -->
     <dependency>
       <groupId>io.jsonwebtoken</groupId>
       <artifactId>jjwt-api</artifactId>
-      <version>0.11.5</version>
+      <version>${jjwt.version}</version>
     </dependency>
     <dependency>
       <groupId>io.jsonwebtoken</groupId>
       <artifactId>jjwt-impl</artifactId>
-      <version>0.11.5</version>
+      <version>${jjwt.version}</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>io.jsonwebtoken</groupId>
       <artifactId>jjwt-jackson</artifactId>
-      <version>0.11.5</version>
+      <version>${jjwt.version}</version>
       <scope>runtime</scope>
     </dependency>
 
+    <!-- Email support -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-mail</artifactId>
     </dependency>
-    <!-- Spring Security (required for AccessDeniedException/AuthenticationException types and future security configuration) -->
+
+    <!-- Spring Security -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-security</artifactId>
     </dependency>
 
-    <!-- ✅ Only ONE springdoc starter, and on 2.8.x -->
+    <!-- OpenAPI / Swagger UI -->
     <dependency>
       <groupId>org.springdoc</groupId>
       <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
       <version>2.8.13</version>
     </dependency>
 
-    <!-- Dev + Test + Lombok -->
+    <!-- Devtools for hot reload -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-devtools</artifactId>
       <scope>runtime</scope>
       <optional>true</optional>
     </dependency>
+
+    <!-- Lombok (compile-time only) -->
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
-      <version>1.18.30</version>
       <scope>provided</scope>
     </dependency>
+
+    <!-- Testing -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
@@ -102,12 +111,13 @@
 
   <build>
     <plugins>
+      <!-- Ensure proper compilation for Java 17 -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
-          <source>${java.version}</source>
-          <target>${java.version}</target>
+          <!-- Use 'release' to target JDK 17 -->
+          <release>${java.version}</release>
           <compilerArgs>
             <arg>-parameters</arg>
           </compilerArgs>
@@ -115,12 +125,13 @@
             <path>
               <groupId>org.projectlombok</groupId>
               <artifactId>lombok</artifactId>
-              <version>1.18.30</version>
+              <version>${lombok.version}</version>
             </path>
           </annotationProcessorPaths>
         </configuration>
       </plugin>
 
+      <!-- Spring Boot Maven Plugin -->
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
@@ -132,4 +143,5 @@
       </plugin>
     </plugins>
   </build>
+
 </project>

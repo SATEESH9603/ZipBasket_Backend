@@ -1,6 +1,5 @@
 package com.example.onlinetest.Controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -27,23 +26,20 @@ import jakarta.validation.Valid;
 public class UserProfileController {
     private final IUserProfileService userProfileService;
     
-    @Autowired
     public UserProfileController(IUserProfileService userProfileService) {
         this.userProfileService = userProfileService;
     }
 
     @PatchMapping(value ="/update/{userName}")
     public ResponseEntity<UpdateUserProfileResponseDto> updateProfile(@Valid @RequestBody UpdateUserProfileRequestDto updateUserProfileRequest, @PathVariable String userName) {
-        // TODO: Implement the update logic (call service, etc.)
-        var res = userProfileService.updateProfile(userName, updateUserProfileRequest);
+        UpdateUserProfileResponseDto res = userProfileService.updateProfile(userName, updateUserProfileRequest);
         return new ResponseEntity<>(res, HttpStatus.OK);
     }
 
     @PostMapping("/forgot-password")
     public ResponseEntity<ForgotPasswordResponseDto> forgotPassword(
             @RequestBody @Valid ForgotPasswordRequestDto request) {
-        var response = userProfileService.forgotPassword(request);
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return new ResponseEntity<>(userProfileService.forgotPassword(request), HttpStatus.OK);
     }
 
      @PatchMapping("/reset-password")
@@ -51,7 +47,6 @@ public class UserProfileController {
         @RequestHeader(value = "Authorization", required = false) String authHeader,
         @RequestParam(value = "token", required = false) String token,
         @RequestBody @Valid ResetPasswordRequestDto request) {
-                    var response = userProfileService.resetPassword(authHeader, token, request);
-        return new ResponseEntity<>(response, HttpStatus.OK);
+        return new ResponseEntity<>(userProfileService.resetPassword(authHeader, token, request), HttpStatus.OK);
     }
 }

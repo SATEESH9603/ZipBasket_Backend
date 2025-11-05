@@ -3,9 +3,7 @@ package com.example.onlinetest.Service;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -29,7 +27,6 @@ public class ProductService implements IProductService {
     private final UserRepo userRepo;
     private static final int PAGE_SIZE = 5;
 
-    @Autowired
     public ProductService(ProductRepo productRepo, UserRepo userRepo) {
         this.productRepo = productRepo;
         this.userRepo = userRepo;
