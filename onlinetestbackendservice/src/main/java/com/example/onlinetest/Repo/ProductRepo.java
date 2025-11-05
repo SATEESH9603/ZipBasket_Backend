@@ -16,4 +16,8 @@ public interface ProductRepo extends JpaRepository<Product, UUID> {
     @EntityGraph(attributePaths = {"seller"})
     @NonNull
     Page<Product> findAll(@NonNull Pageable pageable);
-}
+
+   @EntityGraph(attributePaths = {"seller"})
+    @NonNull
+    Page<Product> findByCategory(@NonNull Category category, @NonNull Pageable pageable);
+    }

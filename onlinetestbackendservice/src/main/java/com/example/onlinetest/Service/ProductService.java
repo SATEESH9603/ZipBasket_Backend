@@ -1,6 +1,7 @@
 package com.example.onlinetest.Service;
 
 import java.math.BigDecimal;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
@@ -83,26 +84,54 @@ public class ProductService implements IProductService {
     }
 
     @Override
-    public ProductsListResponseDto listProducts(Integer pageParam) {
-        int page = (pageParam == null || pageParam < 1) ? 1 : pageParam;
+        public ProductsListResponseDto listProducts(Integer pageParam, String category) {
+            int page = (pageParam == null || pageParam < 1) ? 1 : pageParam;
 
-        try {
-            PageRequest pageRequest = PageRequest.of(page - 1, PAGE_SIZE, Sort.by(Sort.Direction.DESC, "createdAt"));
-            Page<Product> pageResult = productRepo.findAll(pageRequest);
+            try {
+                PageRequest pageRequest = PageRequest.of(page - 1, PAGE_SIZE, Sort.by(Sort.Direction.DESC, "createdAt"));
+                Page<Product> pageResult;
 
-            List<ProductDto> products = com.example.onlinetest.Domain.Mapper.toProductDtoList(pageResult.getContent());
+                String raw = (category == null) ? null : category.trim();
+                if (raw == null || raw.isEmpty()) {
+                    pageResult = productRepo.findAll(pageRequest); // empty -> all
+                } else {
+                    Category cat = parseEnumOrThrow(Category.class, raw); // throws if invalid
+                    pageResult = productRepo.findByCategory(cat, pageRequest);
+                }
 
-            ProductsListResponseDto response = new ProductsListResponseDto();
-            response.setSuccess(true);
-            response.setMessage(products.isEmpty() ? "No products found" : "Products retrieved successfully");
-            response.setProducts(products);
-            response.setPage(page);
-            response.setTotalPages(pageResult.getTotalPages());
-            response.setTotalItems(pageResult.getTotalElements());
+                List<ProductDto> products = com.example.onlinetest.Domain.Mapper.toProductDtoList(pageResult.getContent());
 
-            return response;
-        } catch (Exception e) {
-            throw new ProductException("Failed to fetch products: " + e.getMessage(), e);
+                ProductsListResponseDto response = new ProductsListResponseDto();
+                response.setSuccess(true);
+                response.setMessage(products.isEmpty() ? "No products found" : "Products retrieved successfully");
+                response.setProducts(products);
+                response.setPage(page);
+                response.setTotalPages(pageResult.getTotalPages());
+                response.setTotalItems(pageResult.getTotalElements());
+                return response;
+
+            } catch (IllegalArgumentException badEnum) {
+                // invalid category string -> 400
+                ProductsListResponseDto response = new ProductsListResponseDto();
+                response.setSuccess(false);
+                response.setMessage("Invalid category: " + category);
+                response.setProducts(Collections.emptyList());
+                response.setPage(0);
+                response.setTotalPages(0);
+                response.setTotalItems(0);
+                return response;
+            } catch (Exception e) {
+                throw new ProductException("Failed to fetch products: " + e.getMessage(), e);
+            }
         }
-    }
+
+        /** Case-insensitive enum parse, throws IllegalArgumentException if not found. */
+        private static <E extends Enum<E>> E parseEnumOrThrow(Class<E> enumType, String value) {
+            for (E e : enumType.getEnumConstants()) {
+                if (e.name().equalsIgnoreCase(value)) return e;
+            }
+            throw new IllegalArgumentException("No enum constant " + enumType.getSimpleName() + "." + value);
+        }
+
+
 }

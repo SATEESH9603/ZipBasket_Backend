@@ -32,21 +32,20 @@ public class AdminController {
         this.userRepo = userRepo;
     }
 
-    @PutMapping("/users/{id}/role")
+    @PutMapping("/users/{userName}/role")
     public ResponseEntity<UpdateUserRoleResponseDto> updateUserRole(
-            @PathVariable("id") String id,
+            @PathVariable("userName") String userName,
             @Valid @RequestBody UpdateUserRoleRequestDto req) {
 
         UpdateUserRoleResponseDto resp = new UpdateUserRoleResponseDto();
 
         try {
-            UUID uid = UUID.fromString(id);
-            User user = userRepo.findById(uid).orElse(null);
+            User user = userRepo.findByUsername(userName).orElse(null);
             if (user == null) {
                 resp.setSuccess(false);
                 resp.setMessage("User not found");
                 resp.setError(new ErrorModel(){{
-                    setMessage("User with id " + id + " not found");
+                    setMessage("User with userName " + userName + " not found");
                     setErrorCode("USER_NOT_FOUND");
                 }});
                 return new ResponseEntity<>(resp, HttpStatus.NOT_FOUND);
@@ -75,7 +74,7 @@ public class AdminController {
 
         } catch (IllegalArgumentException ex) {
             resp.setSuccess(false);
-            resp.setMessage("Invalid user id");
+            resp.setMessage("Invalid user userName");
             resp.setError(new ErrorModel(){{
                 setMessage("Invalid UUID: " + ex.getMessage());
                 setErrorCode("INVALID_ID");

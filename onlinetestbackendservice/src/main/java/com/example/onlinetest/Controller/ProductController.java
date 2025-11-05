@@ -30,15 +30,10 @@ public class ProductController {
         
     @GetMapping
     public ResponseEntity<ProductsListResponseDto> listProducts(
-        @Parameter(
-            description = "Page number (starts from 1)",
-            example = "1"
-        )
-        @RequestParam(value = "page", defaultValue = "1") Integer page
-    ) {
-        ProductsListResponseDto response = productService.listProducts(page);
-        return new ResponseEntity<>(response, 
-            response.isSuccess() ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR);
+        @RequestParam(value = "page", defaultValue = "1") Integer page,
+        @RequestParam(value = "category", defaultValue = "") String category) {
+        ProductsListResponseDto response = productService.listProducts(page, category);
+        return new ResponseEntity<>(response, response.isSuccess() ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @io.swagger.v3.oas.annotations.Operation(summary = "Create a new product", description = "Insert product details into catalog")

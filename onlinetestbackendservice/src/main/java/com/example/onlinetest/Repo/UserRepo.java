@@ -10,5 +10,5 @@ import org.springframework.stereotype.Repository;
 public interface UserRepo extends JpaRepository<User, UUID> {
     // You can add custom query methods here if needed
         Optional<User> findByUsername(String username);
-        Optional<User> findByResetToken(String token);        
+        Optional<User> findByResetToken(String token);
 }
