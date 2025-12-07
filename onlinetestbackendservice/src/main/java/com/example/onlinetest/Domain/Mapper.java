@@ -5,9 +5,17 @@ import com.example.onlinetest.Domain.Dto.UpdateUserProfileResponseDto;
 import com.example.onlinetest.Domain.Dto.UserLoginResponseDto;
 import com.example.onlinetest.Domain.Dto.UserRegisterRequestDto;
 import com.example.onlinetest.Domain.Dto.UserRegisterResponseDto;
+import com.example.onlinetest.Domain.Exceptions.ProductException;
 import com.example.onlinetest.Repo.User;
+import com.example.onlinetest.Repo.Category;
 import com.example.onlinetest.Repo.Product;
 import com.example.onlinetest.Domain.Dto.ProductDto;
+import com.example.onlinetest.Domain.Dto.UpdateProductRequestDto;
+import com.example.onlinetest.Domain.Dto.UpdateProductResponseDto;
+import com.example.onlinetest.Domain.Dto.CreateProductRequestDto;
+import com.example.onlinetest.Domain.Dto.ProductResponseDto;
+
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -67,4 +75,99 @@ public class Mapper {
                        .map(ProductDto::new)
                        .collect(Collectors.toList());
     }
+
+    public static ProductDto toProductDto(Product product) {
+        if (product == null) return null;
+        return new ProductDto(product);
+    }
+
+    public static Product toProduct(CreateProductRequestDto request) {
+        Product product = new Product();
+        product.setName(request.getName());
+        product.setDescription(request.getDescription());
+        product.setPrice(new BigDecimal(request.getPrice()));
+        product.setCurrency(request.getCurrency());
+        product.setQuantity(request.getQuantity());
+        product.setSku(request.getSku());
+        try {
+            product.setCategory(Category.valueOf(request.getCategory().toUpperCase().replace(' ', '_')));
+        } catch (IllegalArgumentException iae) {
+            throw new ProductException("Invalid category: " + request.getCategory(), iae);
+        }
+        product.setImages(request.getImages());
+        product.setWeight(request.getWeight());
+        product.setDimensions(request.getDimensions());
+        product.setActive(request.getIsActive());
+        product.setMetadata(request.getMetadata());
+        return product;
+    }
+
+    public static ProductResponseDto toProductResponseDto(Product product) {
+        ProductResponseDto response = new ProductResponseDto();
+        response.setProduct(new ProductDto(product));
+        response.setSuccess(true);
+        response.setMessage("Product retrieved successfully");
+        return response;
+    }
+
+    public static Product toProduct(UpdateProductRequestDto request)
+     {
+        Product product = new Product();
+        // Update fields if present in request
+        if (request.getName() != null) product.setName(request.getName());
+        if (request.getDescription() != null) product.setDescription(request.getDescription());
+        if (request.getPrice() != null && !request.getPrice().isBlank()) {
+            product.setPrice(new BigDecimal(request.getPrice()));
+        }
+        if (request.getCurrency() != null) product.setCurrency(request.getCurrency());
+        if (request.getQuantity() != null) product.setQuantity(request.getQuantity());
+        if (request.getSku() != null) product.setSku(request.getSku());
+        if (request.getCategory() != null && !request.getCategory().isBlank()) {
+            try {
+                product.setCategory(Category.valueOf(request.getCategory().toUpperCase().replace(' ', '_')));
+            } catch (IllegalArgumentException iae) {
+                throw new ProductException("Invalid category: " + request.getCategory(), iae);
+            }
+        }
+        if (request.getImages() != null) product.setImages(request.getImages());
+        if (request.getWeight() != null) product.setWeight(request.getWeight());
+        if (request.getDimensions() != null) product.setDimensions(request.getDimensions());
+        if (request.getIsActive() != null) product.setActive(request.getIsActive());
+        if (request.getMetadata() != null) product.setMetadata(request.getMetadata());
+        return product;
+    }
+
+    public static Product toProduct(Product existingProduct, UpdateProductRequestDto request) {
+        // Update fields if present in request
+        if (request.getName() != null) existingProduct.setName(request.getName());
+        if (request.getDescription() != null) existingProduct.setDescription(request.getDescription());
+        if (request.getPrice() != null && !request.getPrice().isBlank()) {
+            existingProduct.setPrice(new BigDecimal(request.getPrice()));
+        }
+        if (request.getCurrency() != null) existingProduct.setCurrency(request.getCurrency());
+        if (request.getQuantity() != null) existingProduct.setQuantity(request.getQuantity());
+        if (request.getSku() != null) existingProduct.setSku(request.getSku());
+        if (request.getCategory() != null && !request.getCategory().isBlank()) {
+            try {
+                existingProduct.setCategory(Category.valueOf(request.getCategory().toUpperCase().replace(' ', '_')));
+            } catch (IllegalArgumentException iae) {
+                throw new ProductException("Invalid category: " + request.getCategory(), iae);
+            }
+        }
+        if (request.getImages() != null) existingProduct.setImages(request.getImages());
+        if (request.getWeight() != null) existingProduct.setWeight(request.getWeight());
+        if (request.getDimensions() != null) existingProduct.setDimensions(request.getDimensions());
+        if (request.getIsActive() != null) existingProduct.setActive(request.getIsActive());
+        if (request.getMetadata() != null) existingProduct.setMetadata(request.getMetadata());
+        return existingProduct;
+    }
+
+    public static UpdateProductResponseDto toUpdateProductResponseDto(Product updatedProduct) {
+        UpdateProductResponseDto response = new UpdateProductResponseDto();
+        response.setProduct(new ProductDto(updatedProduct));
+        response.setSuccess(true);
+        response.setMessage("Product updated successfully");
+        return response;
+    }
+
 }

@@ -26,6 +26,7 @@ public class SecurityConfig {
                 "/api/register",
                 "/api/users/register",
                 "/api/products",
+                "/api/products/****",
                 "/api/admin/**"
             ).permitAll()
             // other endpoints require authentication

@@ -14,12 +14,15 @@ import com.example.onlinetest.Domain.Dto.CreateProductRequestDto;
 import com.example.onlinetest.Domain.Dto.CreateProductResponseDto;
 import com.example.onlinetest.Domain.Dto.ProductDto;
 import com.example.onlinetest.Domain.Dto.ProductsListResponseDto;
+import com.example.onlinetest.Domain.Dto.ProductResponseDto;
 import com.example.onlinetest.Domain.Exceptions.ProductException;
 import com.example.onlinetest.Repo.Product;
 import com.example.onlinetest.Repo.ProductRepo;
 import com.example.onlinetest.Repo.User;
 import com.example.onlinetest.Repo.UserRepo;
 import com.example.onlinetest.Repo.Category;
+import com.example.onlinetest.Domain.Dto.UpdateProductRequestDto;
+import com.example.onlinetest.Domain.Dto.UpdateProductResponseDto;
 
 @Service
 public class ProductService implements IProductService {
@@ -133,5 +136,53 @@ public class ProductService implements IProductService {
             throw new IllegalArgumentException("No enum constant " + enumType.getSimpleName() + "." + value);
         }
 
+        @Override
+        public ProductResponseDto getProductById(String productId)
+        {
+            ProductResponseDto response = new ProductResponseDto();
+            try {
+                UUID pid = UUID.fromString(productId);
+                Product product = productRepo.findById(pid).orElse(null);
+                if (product == null) {
+                    response.setSuccess(false);
+                    response.setMessage("Product with id " + productId + " not found");
+                } else {                    
+                    response = com.example.onlinetest.Domain.Mapper.toProductResponseDto(product);
+                }
+            }
+            catch (IllegalArgumentException iae) {
+                response.setSuccess(false);
+                response.setMessage("Invalid productId format: " + productId);
+                response.setProduct(null);
+            }
+            catch (Exception e) {
+                throw new ProductException("Failed to fetch product: " + e.getMessage(), e);
+            }
+            return response;
+        }
 
+        @Override
+        public UpdateProductResponseDto updateProduct(String productId, UpdateProductRequestDto request) {
+            UpdateProductResponseDto response = new UpdateProductResponseDto();
+            try {
+                UUID pid = UUID.fromString(productId);
+                Product product = productRepo.findById(pid).orElse(null);
+                if (product == null) {
+                    response.setSuccess(false);
+                    response.setMessage("Product with id " + productId + " not found");
+                    return response;
+                }
+                // Map update fields
+                product = com.example.onlinetest.Domain.Mapper.toProduct(product, request);
+                Product updated = productRepo.save(product);
+                response = com.example.onlinetest.Domain.Mapper.toUpdateProductResponseDto(updated);
+            } catch (IllegalArgumentException iae) {
+                response.setSuccess(false);
+                response.setMessage("Invalid productId format: " + productId);
+                response.setProduct(null);
+            } catch (Exception e) {
+                throw new ProductException("Failed to update product: " + e.getMessage(), e);
+            }
+                return response;
+        }
 }

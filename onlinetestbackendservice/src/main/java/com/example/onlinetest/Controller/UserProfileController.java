@@ -21,6 +21,7 @@ import com.example.onlinetest.Service.IUserProfileService;
 
 import jakarta.validation.Valid;
 
+@Valid
 @RestController
 @RequestMapping("/api/user/profile")
 public class UserProfileController {
