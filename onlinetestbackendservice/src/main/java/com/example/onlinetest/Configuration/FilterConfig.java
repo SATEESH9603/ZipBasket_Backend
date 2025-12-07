@@ -9,14 +9,12 @@ import org.springframework.core.Ordered;
 public class FilterConfig {
 
     @Bean
-    public FilterRegistrationBean<JwtAdminFilter> jwtAdminFilterRegistration(JwtAdminFilter filter) {
-        FilterRegistrationBean<JwtAdminFilter> reg = new FilterRegistrationBean<>(filter);
-        // register for product creation endpoint
-        reg.addUrlPatterns("/api/products");
-        reg.setName("jwtAdminFilter");
-        // Ensure it runs early
+    public FilterRegistrationBean<JwtAccessFilter> jwtAccessFilterRegistration(JwtAccessFilter filter) {
+        FilterRegistrationBean<JwtAccessFilter> reg = new FilterRegistrationBean<>(filter);
+        // Register for product, admin, cart, address, wishlist, checkout, and orders endpoints
+        reg.addUrlPatterns("/api/products", "/api/admin/*", "/api/cart/*", "/api/user/address/*", "/api/user/wishlist/*", "/api/checkout", "/api/orders/*");
+        reg.setName("jwtAccessFilter");
         reg.setOrder(Ordered.HIGHEST_PRECEDENCE);
         return reg;
     }
-
 }

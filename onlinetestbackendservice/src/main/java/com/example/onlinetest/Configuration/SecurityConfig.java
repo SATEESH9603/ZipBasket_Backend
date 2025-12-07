@@ -25,15 +25,15 @@ public class SecurityConfig {
                 "/api/login",
                 "/api/register",
                 "/api/users/register",
+                // Public product catalog endpoints (GET/listing). Admin/Seller actions protected by JwtAdminFilter
                 "/api/products",
-                "/api/products/****",
-                "/api/admin/**"
+                "/api/products/**"
             ).permitAll()
-            // other endpoints require authentication
+            // All other endpoints require authentication (e.g., /api/cart/**)
             .anyRequest().authenticated()
         );
 
-        // keep basic auth enabled for development; replace with JWT filter later
+        // Keep basic auth enabled for development; JWT filters (JwtAdminFilter, JwtAuthFilter) are registered via FilterConfig
         http.httpBasic(withDefaults());
 
         return http.build();

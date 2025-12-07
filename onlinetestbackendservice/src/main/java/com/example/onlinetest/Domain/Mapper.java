@@ -9,11 +9,26 @@ import com.example.onlinetest.Domain.Exceptions.ProductException;
 import com.example.onlinetest.Repo.User;
 import com.example.onlinetest.Repo.Category;
 import com.example.onlinetest.Repo.Product;
+import com.example.onlinetest.Repo.CartItem;
+import com.example.onlinetest.Repo.Cart;
+import com.example.onlinetest.Repo.Address;
+import com.example.onlinetest.Repo.Wishlist;
+import com.example.onlinetest.Repo.WishlistItem;
 import com.example.onlinetest.Domain.Dto.ProductDto;
 import com.example.onlinetest.Domain.Dto.UpdateProductRequestDto;
 import com.example.onlinetest.Domain.Dto.UpdateProductResponseDto;
 import com.example.onlinetest.Domain.Dto.CreateProductRequestDto;
 import com.example.onlinetest.Domain.Dto.ProductResponseDto;
+import com.example.onlinetest.Domain.Dto.CartItemDto;
+import com.example.onlinetest.Domain.Dto.CartViewResponseDto;
+import com.example.onlinetest.Domain.Dto.AddressDto;
+import com.example.onlinetest.Domain.Dto.WishlistItemDto;
+import com.example.onlinetest.Domain.Dto.WishlistViewResponseDto;
+import com.example.onlinetest.Repo.Order;
+import com.example.onlinetest.Repo.OrderItem;
+import com.example.onlinetest.Domain.Dto.OrderSummaryDto;
+import com.example.onlinetest.Domain.Dto.OrderDetailDto;
+import com.example.onlinetest.Domain.Dto.OrderItemDto;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -170,4 +185,115 @@ public class Mapper {
         return response;
     }
 
+    // Cart mappings
+    public static CartItemDto toCartItemDto(CartItem item) {
+        if (item == null || item.getProduct() == null) return null;
+        CartItemDto dto = new CartItemDto();
+        dto.setProductId(item.getProduct().getId() != null ? item.getProduct().getId().toString() : null);
+        dto.setName(item.getProduct().getName());
+        dto.setQuantity(item.getQuantity());
+        dto.setPrice(item.getProduct().getPrice());
+        return dto;
+    }
+
+    public static List<CartItemDto> toCartItemDtoList(List<CartItem> items) {
+        if (items == null) return java.util.Collections.emptyList();
+        return items.stream()
+                    .map(Mapper::toCartItemDto)
+                    .filter(java.util.Objects::nonNull)
+                    .collect(Collectors.toList());
+    }
+
+    public static CartViewResponseDto toCartViewResponseDto(Cart cart) {
+        CartViewResponseDto resp = new CartViewResponseDto();
+        resp.setItems(toCartItemDtoList(cart != null ? cart.getItems() : null));
+        resp.setSuccess(true);
+        resp.setMessage("Cart fetched successfully");
+        return resp;
+    }
+
+    // Address mappings
+    public static AddressDto toAddressDto(Address address) {
+        if (address == null) return null;
+        AddressDto dto = new AddressDto();
+        dto.setId(address.getId());
+        dto.setType(address.getType());
+        dto.setLine1(address.getLine1());
+        dto.setLine2(address.getLine2());
+        dto.setCity(address.getCity());
+        dto.setState(address.getState());
+        dto.setPostalCode(address.getPostalCode());
+        dto.setCountry(address.getCountry());
+        dto.setDefault(address.isDefault());
+        return dto;
+    }
+
+    public static List<AddressDto> toAddressDtoList(List<Address> addresses) {
+        if (addresses == null) return java.util.Collections.emptyList();
+        return addresses.stream().map(Mapper::toAddressDto).collect(Collectors.toList());
+    }
+
+    // Wishlist mappings
+    public static WishlistItemDto toWishlistItemDto(WishlistItem item) {
+        if (item == null || item.getProduct() == null) return null;
+        WishlistItemDto dto = new WishlistItemDto();
+        dto.setProductId(item.getProduct().getId() != null ? item.getProduct().getId().toString() : null);
+        dto.setName(item.getProduct().getName());
+        return dto;
+    }
+
+    public static java.util.List<WishlistItemDto> toWishlistItemDtoList(java.util.List<WishlistItem> items) {
+        if (items == null) return java.util.Collections.emptyList();
+        return items.stream().map(Mapper::toWishlistItemDto).filter(java.util.Objects::nonNull).collect(java.util.stream.Collectors.toList());
+    }
+
+    public static WishlistViewResponseDto toWishlistViewResponseDto(Wishlist wishlist) {
+        WishlistViewResponseDto resp = new WishlistViewResponseDto();
+        resp.setItems(toWishlistItemDtoList(wishlist != null ? wishlist.getItems() : null));
+        resp.setSuccess(true);
+        resp.setMessage("Wishlist fetched successfully");
+        return resp;
+    }
+
+    // Order mappings
+    public static OrderSummaryDto toOrderSummaryDto(Order order) {
+        if (order == null) return null;
+        OrderSummaryDto dto = new OrderSummaryDto();
+        dto.setId(order.getId());
+        dto.setStatus(order.getStatus() != null ? order.getStatus().name() : null);
+        dto.setTotal(order.getTotal());
+        return dto;
+    }
+
+    public static java.util.List<OrderSummaryDto> toOrderSummaryDtoList(java.util.List<Order> orders) {
+        if (orders == null) return java.util.Collections.emptyList();
+        return orders.stream().map(Mapper::toOrderSummaryDto).filter(java.util.Objects::nonNull).collect(java.util.stream.Collectors.toList());
+    }
+
+    public static OrderItemDto toOrderItemDto(OrderItem item) {
+        if (item == null || item.getProduct() == null) return null;
+        OrderItemDto dto = new OrderItemDto();
+        dto.setProductId(item.getProduct().getId() != null ? item.getProduct().getId().toString() : null);
+        dto.setName(item.getProduct().getName());
+        dto.setQuantity(item.getQuantity());
+        dto.setUnitPrice(item.getUnitPrice());
+        return dto;
+    }
+
+    public static java.util.List<OrderItemDto> toOrderItemDtoList(java.util.List<OrderItem> items) {
+        if (items == null) return java.util.Collections.emptyList();
+        return items.stream().map(Mapper::toOrderItemDto).filter(java.util.Objects::nonNull).collect(java.util.stream.Collectors.toList());
+    }
+
+    public static OrderDetailDto toOrderDetailDto(Order order) {
+        if (order == null) return null;
+        OrderDetailDto dto = new OrderDetailDto();
+        dto.setId(order.getId());
+        dto.setStatus(order.getStatus() != null ? order.getStatus().name() : null);
+        dto.setSubtotal(order.getSubtotal());
+        dto.setShippingCost(order.getShippingCost());
+        dto.setTotal(order.getTotal());
+        dto.setItems(toOrderItemDtoList(order.getItems()));
+        return dto;
+    }
 }

@@ -13,6 +13,8 @@ import com.example.onlinetest.Domain.Dto.ProductsListResponseDto;
 import com.example.onlinetest.Domain.Dto.UpdateUserProfileResponseDto;
 import com.example.onlinetest.Domain.Dto.UserLoginResponseDto;
 import com.example.onlinetest.Domain.Dto.UserRegisterResponseDto;
+import com.example.onlinetest.Domain.Dto.CartUpdateResponseDto;
+import com.example.onlinetest.Domain.Dto.CheckoutResponseDto;
 import com.example.onlinetest.Domain.ErrorModel;
 
 import org.springframework.security.access.AccessDeniedException;
@@ -57,7 +59,6 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(userResponse, HttpStatus.NOT_FOUND);
     }
 
-    // For profile update context  
     @ExceptionHandler(ProfileUserNotFoundException.class)
     public ResponseEntity<UpdateUserProfileResponseDto> handleProfileUserNotFoundException(ProfileUserNotFoundException ex) {
         UpdateUserProfileResponseDto ProfileUserResponse = new UpdateUserProfileResponseDto();
@@ -94,7 +95,23 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    // Validation errors for controller input
+    // Cart-specific exceptions
+    @ExceptionHandler(CartException.class)
+    public ResponseEntity<CartUpdateResponseDto> handleCartException(CartException ex) {
+        CartUpdateResponseDto resp = new CartUpdateResponseDto();
+        resp.setSuccess(false);
+        resp.setMessage("Cart operation failed: " + ex.getMessage());
+        return new ResponseEntity<>(resp, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(OrderException.class)
+    public ResponseEntity<CheckoutResponseDto> handleOrderException(OrderException ex) {
+        CheckoutResponseDto resp = new CheckoutResponseDto();
+        resp.setSuccess(false);
+        resp.setMessage("Order operation failed: " + ex.getMessage());
+        return new ResponseEntity<>(resp, HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<CreateProductResponseDto> handleValidationException(MethodArgumentNotValidException ex) {
         CreateProductResponseDto resp = new CreateProductResponseDto();
@@ -124,7 +141,6 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(resp, HttpStatus.BAD_REQUEST);
     }
 
-    // Handle Spring Security access denied (authorization failures)
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<CreateProductResponseDto> handleAccessDenied(AccessDeniedException ex) {
         CreateProductResponseDto resp = new CreateProductResponseDto();
@@ -138,7 +154,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(resp);
     }
 
-    // Handle authentication failures
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<CreateProductResponseDto> handleAuthenticationException(AuthenticationException ex) {
         CreateProductResponseDto resp = new CreateProductResponseDto();
