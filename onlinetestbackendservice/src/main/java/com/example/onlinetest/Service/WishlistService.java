@@ -41,9 +41,17 @@ public class WishlistService implements IWishlistService {
                 w.setUserName(userName);
                 return wishlistRepo.save(w);
             });
-            return Mapper.toWishlistViewResponseDto(wishlist);
+            WishlistViewResponseDto resp = Mapper.toWishlistViewResponseDto(wishlist);
+            resp.setSuccess(true);
+            resp.setMessage("Wishlist fetched successfully");
+            return resp;
         } catch (Exception e) {
-            throw new OrderException("Failed to view wishlist for user: " + userName, e);
+            // Return a safe empty response instead of throwing to keep UI responsive
+            WishlistViewResponseDto resp = new WishlistViewResponseDto();
+            resp.setItems(java.util.Collections.emptyList());
+            resp.setSuccess(false);
+            resp.setMessage("Failed to view wishlist for user: " + userName);
+            return resp;
         }
     }
 

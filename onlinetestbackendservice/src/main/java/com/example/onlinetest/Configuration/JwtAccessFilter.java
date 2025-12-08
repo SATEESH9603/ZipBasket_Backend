@@ -39,6 +39,12 @@ public class JwtAccessFilter extends OncePerRequestFilter {
         String ctx = request.getContextPath();
         String method = request.getMethod();
 
+        // Always allow CORS preflight
+        if ("OPTIONS".equalsIgnoreCase(method)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         boolean protectProductPost = "POST".equalsIgnoreCase(method) && path != null && path.startsWith(ctx + "/api/products");
         boolean protectAdminPaths = path != null && path.startsWith(ctx + "/api/admin");
         boolean protectCartPaths = path != null && path.startsWith(ctx + "/api/cart");
