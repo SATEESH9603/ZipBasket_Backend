@@ -262,6 +262,7 @@ public class Mapper {
         dto.setId(order.getId());
         dto.setStatus(order.getStatus() != null ? order.getStatus().name() : null);
         dto.setTotal(order.getTotal());
+        dto.setCreatedAt(order.getCreatedAt());
         return dto;
     }
 
@@ -293,6 +294,7 @@ public class Mapper {
         dto.setSubtotal(order.getSubtotal());
         dto.setShippingCost(order.getShippingCost());
         dto.setTotal(order.getTotal());
+        dto.setCreatedAt(order.getCreatedAt());
         dto.setItems(toOrderItemDtoList(order.getItems()));
         return dto;
     }

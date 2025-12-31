@@ -1,7 +1,6 @@
 package com.example.onlinetest.Service;
 
 import java.math.BigDecimal;
-import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -68,28 +67,45 @@ public class CheckoutService implements ICheckoutService {
                 resp.setMessage("Invalid shipping method");
                 return resp;
             }
-            java.math.BigDecimal subtotal = java.math.BigDecimal.ZERO;
+            BigDecimal subtotal = BigDecimal.ZERO;
             for (CartItem ci : cart.getItems()) {
                 Product product = productRepo.findById(ci.getProduct().getId()).orElse(null);
                 if (product == null) continue;
+                // Confirm reservation exists and finalize: decrement quantity and reserved
+                int reserved = Math.max(0, product.getReservedQuantity());
+                if (reserved < ci.getQuantity()) {
+                    resp.setSuccess(false);
+                    resp.setMessage("Reserved stock missing for product: " + product.getName());
+                    return resp;
+                }
+                int available = Math.max(0, product.getQuantity());
+                if (available < ci.getQuantity()) {
+                    resp.setSuccess(false);
+                    resp.setMessage("Insufficient stock for product: " + product.getName());
+                    return resp;
+                }
+                product.setReservedQuantity(reserved - ci.getQuantity());
+                product.setQuantity(available - ci.getQuantity());
+                productRepo.save(product);
+
                 OrderItem oi = new OrderItem();
                 oi.setOrder(order);
                 oi.setProduct(product);
                 oi.setQuantity(ci.getQuantity());
                 oi.setUnitPrice(product.getPrice());
                 order.getItems().add(oi);
-                subtotal = subtotal.add(product.getPrice().multiply(java.math.BigDecimal.valueOf(ci.getQuantity())));
+                subtotal = subtotal.add(product.getPrice().multiply(BigDecimal.valueOf(ci.getQuantity())));
             }
             order.setSubtotal(subtotal);
-            java.math.BigDecimal shippingCost = switch (order.getShippingMethod()) {
-                case STANDARD -> java.math.BigDecimal.valueOf(5);
-                case EXPRESS -> java.math.BigDecimal.valueOf(15);
-                case OVERNIGHT -> java.math.BigDecimal.valueOf(30);
+            BigDecimal shippingCost = switch (order.getShippingMethod()) {
+                case STANDARD -> BigDecimal.valueOf(5);
+                case EXPRESS -> BigDecimal.valueOf(15);
+                case OVERNIGHT -> BigDecimal.valueOf(30);
             };
             order.setShippingCost(shippingCost);
             order.setTotal(subtotal.add(shippingCost));
             Order saved = orderRepo.save(order);
-            // Optionally clear cart
+            // Clear cart
             cart.getItems().clear();
             cartRepo.save(cart);
             resp.setSuccess(true);

@@ -12,7 +12,7 @@ import lombok.Setter;
 @Table(name = "carts")
 @Getter
 @Setter
-public class Cart {
+public class Cart extends BaseModel { // track created_at/updated_at for stale cleanup
     @Id
     @Column(name = "id", nullable = false)
     private UUID id;

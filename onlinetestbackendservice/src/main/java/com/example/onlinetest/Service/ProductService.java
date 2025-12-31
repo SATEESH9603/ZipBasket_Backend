@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.onlinetest.Domain.Dto.CreateProductRequestDto;
 import com.example.onlinetest.Domain.Dto.CreateProductResponseDto;
@@ -87,102 +88,118 @@ public class ProductService implements IProductService {
     }
 
     @Override
-        public ProductsListResponseDto listProducts(Integer pageParam, String category) {
-            int page = (pageParam == null || pageParam < 1) ? 1 : pageParam;
+    @Transactional(readOnly = true)
+    public ProductsListResponseDto listProducts(Integer pageParam, String category, String filter) {
+        int page = (pageParam == null || pageParam < 1) ? 1 : pageParam;
 
-            try {
-                PageRequest pageRequest = PageRequest.of(page - 1, PAGE_SIZE, Sort.by(Sort.Direction.DESC, "createdAt"));
-                Page<Product> pageResult;
+        try {
+            PageRequest pageRequest = PageRequest.of(page - 1, PAGE_SIZE, Sort.by(Sort.Direction.DESC, "createdAt"));
+            Page<Product> pageResult;
 
-                String raw = (category == null) ? null : category.trim();
-                if (raw == null || raw.isEmpty()) {
-                    pageResult = productRepo.findAll(pageRequest); // empty -> all
-                } else {
-                    Category cat = parseEnumOrThrow(Category.class, raw); // throws if invalid
-                    pageResult = productRepo.findByCategory(cat, pageRequest);
-                }
-
-                List<ProductDto> products = com.example.onlinetest.Domain.Mapper.toProductDtoList(pageResult.getContent());
-
-                ProductsListResponseDto response = new ProductsListResponseDto();
-                response.setSuccess(true);
-                response.setMessage(products.isEmpty() ? "No products found" : "Products retrieved successfully");
-                response.setProducts(products);
-                response.setPage(page);
-                response.setTotalPages(pageResult.getTotalPages());
-                response.setTotalItems(pageResult.getTotalElements());
-                return response;
-
-            } catch (IllegalArgumentException badEnum) {
-                // invalid category string -> 400
-                ProductsListResponseDto response = new ProductsListResponseDto();
-                response.setSuccess(false);
-                response.setMessage("Invalid category: " + category);
-                response.setProducts(Collections.emptyList());
-                response.setPage(0);
-                response.setTotalPages(0);
-                response.setTotalItems(0);
-                return response;
-            } catch (Exception e) {
-                throw new ProductException("Failed to fetch products: " + e.getMessage(), e);
+            String rawCat = (category == null) ? null : category.trim();
+            if (rawCat == null || rawCat.isEmpty()) {
+                pageResult = productRepo.findAll(pageRequest); // empty -> all
+            } else {
+                Category cat = parseEnumOrThrow(Category.class, rawCat); // throws if invalid
+                pageResult = productRepo.findByCategory(cat, pageRequest);
             }
-        }
 
-        /** Case-insensitive enum parse, throws IllegalArgumentException if not found. */
-        private static <E extends Enum<E>> E parseEnumOrThrow(Class<E> enumType, String value) {
-            for (E e : enumType.getEnumConstants()) {
-                if (e.name().equalsIgnoreCase(value)) return e;
+            String f = (filter == null) ? null : filter.trim().toUpperCase();
+            List<Product> entities = pageResult.getContent();
+            if ("IN_STOCK".equals(f)) {
+                entities = entities.stream()
+                    .filter(p -> p.isActive() && (p.getQuantity() - Math.max(0, p.getReservedQuantity())) > 0)
+                    .toList();
             }
-            throw new IllegalArgumentException("No enum constant " + enumType.getSimpleName() + "." + value);
-        }
 
-        @Override
-        public ProductResponseDto getProductById(String productId)
-        {
-            ProductResponseDto response = new ProductResponseDto();
-            try {
-                UUID pid = UUID.fromString(productId);
-                Product product = productRepo.findById(pid).orElse(null);
-                if (product == null) {
-                    response.setSuccess(false);
-                    response.setMessage("Product with id " + productId + " not found");
-                } else {                    
-                    response = com.example.onlinetest.Domain.Mapper.toProductResponseDto(product);
-                }
-            }
-            catch (IllegalArgumentException iae) {
-                response.setSuccess(false);
-                response.setMessage("Invalid productId format: " + productId);
-                response.setProduct(null);
-            }
-            catch (Exception e) {
-                throw new ProductException("Failed to fetch product: " + e.getMessage(), e);
-            }
+            List<ProductDto> products = com.example.onlinetest.Domain.Mapper.toProductDtoList(entities);
+
+            ProductsListResponseDto response = new ProductsListResponseDto();
+            response.setSuccess(true);
+            response.setMessage(products.isEmpty() ? "No products found" : "Products retrieved successfully");
+            response.setProducts(products);
+            response.setPage(page);
+            response.setTotalPages(pageResult.getTotalPages());
+            response.setTotalItems(pageResult.getTotalElements());
             return response;
-        }
 
-        @Override
-        public UpdateProductResponseDto updateProduct(String productId, UpdateProductRequestDto request) {
-            UpdateProductResponseDto response = new UpdateProductResponseDto();
-            try {
-                UUID pid = UUID.fromString(productId);
-                Product product = productRepo.findById(pid).orElse(null);
-                if (product == null) {
-                    response.setSuccess(false);
-                    response.setMessage("Product with id " + productId + " not found");
-                    return response;
-                }
-                // Map update fields
-                product = com.example.onlinetest.Domain.Mapper.toProduct(product, request);
-                Product updated = productRepo.save(product);
-                response = com.example.onlinetest.Domain.Mapper.toUpdateProductResponseDto(updated);
-            } catch (IllegalArgumentException iae) {
-                response.setSuccess(false);
-                response.setMessage("Invalid productId format: " + productId);
-                response.setProduct(null);
-            } catch (Exception e) {
-                throw new ProductException("Failed to update product: " + e.getMessage(), e);
-            }
-                return response;
+        } catch (IllegalArgumentException badEnum) {
+            // invalid category string -> 400
+            ProductsListResponseDto response = new ProductsListResponseDto();
+            response.setSuccess(false);
+            response.setMessage("Invalid category: " + category);
+            response.setProducts(Collections.emptyList());
+            response.setPage(0);
+            response.setTotalPages(0);
+            response.setTotalItems(0);
+            return response;
+        } catch (Exception e) {
+            throw new ProductException("Failed to fetch products: " + e.getMessage(), e);
         }
+    }
+
+    /** Case-insensitive enum parse, throws IllegalArgumentException if not found. */
+    private static <E extends Enum<E>> E parseEnumOrThrow(Class<E> enumType, String value) {
+        for (E e : enumType.getEnumConstants()) {
+            if (e.name().equalsIgnoreCase(value)) return e;
+        }
+        throw new IllegalArgumentException("No enum constant " + enumType.getSimpleName() + "." + value);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ProductResponseDto getProductById(String productId)
+    {
+        ProductResponseDto response = new ProductResponseDto();
+        try {
+            UUID pid = UUID.fromString(productId);
+            Product product = productRepo.findById(pid).orElse(null);
+            if (product == null) {
+                response.setSuccess(false);
+                response.setMessage("Product with id " + productId + " not found");
+            } else {
+                // touch lazy seller to initialize within transaction
+                if (product.getSeller() != null) {
+                    product.getSeller().getUsername();
+                }
+                response = com.example.onlinetest.Domain.Mapper.toProductResponseDto(product);
+            }
+        }
+        catch (IllegalArgumentException iae) {
+            response.setSuccess(false);
+            response.setMessage("Invalid productId format: " + productId);
+            response.setProduct(null);
+        }
+        catch (Exception e) {
+            throw new ProductException("Failed to fetch product: " + e.getMessage(), e);
+        }
+        return response;
+    }
+
+    @Override
+    @Transactional
+    public UpdateProductResponseDto updateProduct(String productId, UpdateProductRequestDto request) {
+        UpdateProductResponseDto response = new UpdateProductResponseDto();
+        try {
+            UUID pid = UUID.fromString(productId);
+            Product product = productRepo.findById(pid).orElse(null); // eager seller via @EntityGraph
+            if (product == null) {
+                response.setSuccess(false);
+                response.setMessage("Product with id " + productId + " not found");
+                return response;
+            }
+            // touch lazy seller to keep session open if needed
+            if (product.getSeller() != null) { product.getSeller().getUsername(); }
+            product = com.example.onlinetest.Domain.Mapper.toProduct(product, request);
+            Product updated = productRepo.save(product);
+            response = com.example.onlinetest.Domain.Mapper.toUpdateProductResponseDto(updated);
+        } catch (IllegalArgumentException iae) {
+            response.setSuccess(false);
+            response.setMessage("Invalid productId format: " + productId);
+            response.setProduct(null);
+        } catch (Exception e) {
+            throw new ProductException("Failed to update product: " + e.getMessage(), e);
+        }
+        return response;
+    }
 }

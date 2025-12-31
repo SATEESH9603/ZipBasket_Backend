@@ -48,6 +48,10 @@ public class Product extends BaseModel {
     @Column(name = "quantity", nullable = false)
     public int quantity = 0;
 
+    // Reserved units across customer carts (not yet purchased)
+    @Column(name = "reserved_quantity", nullable = false)
+    public int reservedQuantity = 0;
+
     @Column(name = "sku", unique = true)
     public String sku;
 

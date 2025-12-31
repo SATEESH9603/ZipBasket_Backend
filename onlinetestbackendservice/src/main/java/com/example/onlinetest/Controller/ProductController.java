@@ -36,8 +36,10 @@ public class ProductController {
     @GetMapping
     public ResponseEntity<ProductsListResponseDto> listProducts(
         @RequestParam(value = "page", defaultValue = "1") Integer page,
-        @RequestParam(value = "category", defaultValue = "") String category) {
-        ProductsListResponseDto response = productService.listProducts(page, category);
+        @RequestParam(value = "category", defaultValue = "") String category,
+        @RequestParam(value = "filter", defaultValue = "") String filter
+    ) {
+        ProductsListResponseDto response = productService.listProducts(page, category, filter);
         return new ResponseEntity<>(response, response.isSuccess() ? HttpStatus.OK : HttpStatus.INTERNAL_SERVER_ERROR);
     }
 

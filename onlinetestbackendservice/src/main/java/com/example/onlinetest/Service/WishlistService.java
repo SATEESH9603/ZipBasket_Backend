@@ -5,10 +5,10 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.onlinetest.Domain.Mapper;
 import com.example.onlinetest.Domain.Dto.WishlistModifyRequestDto;
 import com.example.onlinetest.Domain.Dto.WishlistModifyResponseDto;
 import com.example.onlinetest.Domain.Dto.WishlistViewResponseDto;
+import com.example.onlinetest.Domain.Mapper;
 import com.example.onlinetest.Domain.Exceptions.CartException;
 import com.example.onlinetest.Domain.Exceptions.OrderException;
 import com.example.onlinetest.Repo.Cart;
@@ -73,7 +73,8 @@ public class WishlistService implements IWishlistService {
                 return resp;
             }
             boolean exists = wishlist.getItems().stream().anyMatch(i -> i.getProduct().getId().equals(product.getId()));
-            if (!exists) {
+            int availableForDisplay = Math.max(0, product.getQuantity() - Math.max(0, product.getReservedQuantity()));
+            if (!exists && availableForDisplay > 0) { // prevent adding out-of-stock to wishlist
                 WishlistItem item = new WishlistItem();
                 item.setWishlist(wishlist);
                 item.setProduct(product);
@@ -131,15 +132,21 @@ public class WishlistService implements IWishlistService {
             UUID productId = UUID.fromString(request.getProductId());
             // remove from wishlist
             wishlist.getItems().removeIf(i -> i.getProduct() != null && productId.equals(i.getProduct().getId()));
-            // add to cart (quantity = 1)
+            // add to cart (quantity = 1) if in stock
             Product product = productRepo.findById(productId).orElse(null);
             if (product != null) {
-                CartItem item = new CartItem();
-                item.setCart(cart);
-                item.setProduct(product);
-                item.setQuantity(1);
-                cart.getItems().add(item);
-                cartRepo.save(cart);
+                int available = Math.max(0, product.getQuantity() - Math.max(0, product.getReservedQuantity()));
+                if (available > 0) {
+                    // reserve 1 and add to cart
+                    product.setReservedQuantity(product.getReservedQuantity() + 1);
+                    productRepo.save(product);
+                    CartItem item = new CartItem();
+                    item.setCart(cart);
+                    item.setProduct(product);
+                    item.setQuantity(1);
+                    cart.getItems().add(item);
+                    cartRepo.save(cart);
+                }
             }
             wishlistRepo.save(wishlist);
             WishlistModifyResponseDto resp = new WishlistModifyResponseDto();

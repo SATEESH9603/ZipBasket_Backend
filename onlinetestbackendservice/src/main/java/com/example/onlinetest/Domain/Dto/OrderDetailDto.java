@@ -1,6 +1,7 @@
 package com.example.onlinetest.Domain.Dto;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -11,6 +12,7 @@ public class OrderDetailDto {
     private BigDecimal subtotal;
     private BigDecimal shippingCost;
     private BigDecimal total;
+    private LocalDateTime createdAt;
     private List<OrderItemDto> items = new ArrayList<>();
 
     public UUID getId() { return id; }
@@ -23,6 +25,8 @@ public class OrderDetailDto {
     public void setShippingCost(BigDecimal shippingCost) { this.shippingCost = shippingCost; }
     public BigDecimal getTotal() { return total; }
     public void setTotal(BigDecimal total) { this.total = total; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public List<OrderItemDto> getItems() { return items; }
     public void setItems(List<OrderItemDto> items) { this.items = items; }
 }

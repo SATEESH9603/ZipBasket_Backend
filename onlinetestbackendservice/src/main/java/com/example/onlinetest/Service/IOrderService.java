@@ -11,4 +11,7 @@ public interface IOrderService {
     OrderDetailDto get(String username, UUID orderId);
     boolean cancel(String username, UUID orderId);
     boolean requestReturn(String username, UUID orderId);
+    List<OrderSummaryDto> listBySeller(UUID sellerId);
+    List<OrderDetailDto> listDetailsBySeller(UUID sellerId);
+    List<OrderSummaryDto> listBySellerPaged(UUID sellerId, int page, int size);
 }
