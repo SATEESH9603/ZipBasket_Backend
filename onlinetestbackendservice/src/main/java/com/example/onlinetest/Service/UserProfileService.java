@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.onlinetest.Domain.Dto.ForgotPasswordRequestDto;
@@ -28,7 +27,6 @@ public class UserProfileService implements IUserProfileService {
     private final IJwtService jwtService;
 
     // Constructor injection for UserRepo
-    @Autowired
     public UserProfileService(UserRepo userRepo, IEmailService emailService,IJwtService jwtService) {
         this.userRepo = userRepo;
         this.emailService = emailService;
@@ -37,11 +35,11 @@ public class UserProfileService implements IUserProfileService {
 
     @Override
     public UpdateUserProfileResponseDto updateProfile(String userName, UpdateUserProfileRequestDto requestDto) {
-        var fetchedUserResponse = userRepo.findByUsername(userName);
-        if (fetchedUserResponse.isEmpty()) {
-            throw new ProfileUserNotFoundException("User with username " + userName + " does not exist");
-        }
-        var savedUserResponse = userRepo.save(Mapper.toUser(fetchedUserResponse.get(), requestDto));
+        User existing =
+            userRepo.findByUsername(userName)
+                    .orElseThrow(() -> new ProfileUserNotFoundException(
+                        "User with username " + userName + " does not exist"));
+        var savedUserResponse = userRepo.save(Mapper.toUser(existing, requestDto));
         return Mapper.toUpdateUserProfileResponseDto(savedUserResponse);
     }
 

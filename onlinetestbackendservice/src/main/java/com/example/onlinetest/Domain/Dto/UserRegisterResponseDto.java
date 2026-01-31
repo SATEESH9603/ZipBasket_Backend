@@ -3,9 +3,13 @@ package com.example.onlinetest.Domain.Dto;
 import com.example.onlinetest.Domain.ErrorModel;
 import com.example.onlinetest.Repo.User;
 
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
 public class UserRegisterResponseDto {
-    public ErrorModel error;
-    public User user;
+    private ErrorModel error;
+    private User user;
 }
 

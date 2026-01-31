@@ -1,6 +1,7 @@
 package com.example.onlinetest.Service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import java.time.Instant;
+
 import org.springframework.stereotype.Service;
 
 import com.example.onlinetest.Domain.Dto.UserLoginRequestDto;
@@ -19,7 +20,6 @@ public class AuthenticationService implements IUserAuthenticationService {
     private final UserRepo userRepo;
     private final IJwtService jwtService;
     // Constructor injection for UserRepo
-    @Autowired
     public AuthenticationService(UserRepo userRepo, IJwtService jwtService) {
         this.jwtService = jwtService;
         this.userRepo = userRepo;
@@ -27,23 +27,31 @@ public class AuthenticationService implements IUserAuthenticationService {
 
     @Override
     public UserLoginResponseDto login(UserLoginRequestDto userDetails) {
-        var user = userRepo.findByUsername(userDetails.getUsername());
-        if (user.isEmpty() || !user.get().getPassword().equals(userDetails.getPassword())) {
+        var userOpt = userRepo.findByUsername(userDetails.getUsername());
+        if (userOpt.isEmpty() || !userOpt.get().getPassword().equals(userDetails.getPassword())) {
+            // Increment loginAttempts if user exists
+            userOpt.ifPresent(u -> {
+                u.setLoginAttempts(u.getLoginAttempts() + 1);
+                userRepo.save(u);
+            });
             throw new UserNotFoundException("User with username " + userDetails.getUsername() + " does not exist or password is incorrect");
         }
-        return Mapper.toUserLoginResponseDto(user.get(), jwtService.generateToken(user.get()));
+        User user = userOpt.get();
+        // Reset loginAttempts and set lastLogin
+        user.setLoginAttempts(0);
+        user.setLastLogin(Instant.now().toString());
+        userRepo.save(user);
+        return Mapper.toUserLoginResponseDto(user, jwtService.generateToken(user));
     }
 
     @Override
     public UserRegisterResponseDto register(UserRegisterRequestDto userDetails) {
-    
         var user = Mapper.toUser(userDetails);
-        // Here you would typically handle the registration logic
-        userRepo.findByUsername(user.getUsername())        
-                .ifPresent(existirAlreadyExistExceptionngUser -> {
+        userRepo.findByUsername(user.getUsername())
+                .ifPresent(existingUser -> {
                     throw new UserAlreadyExistException("User with username "+userDetails.getUsername()+" already exists");
                 });
-                User createdUser = userRepo.save(user);
+        User createdUser = userRepo.save(user);
         return Mapper.toUserRegisterResponseDto(createdUser);
     }  
 

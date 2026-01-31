@@ -1,75 +1,89 @@
 package com.example.onlinetest.Repo;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "users")
 @Getter
 @Setter
-public class User extends UserBaseModel {
+public class User extends BaseModel {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id", updatable = false, nullable = false)
-    public UUID id;
+    private UUID id;
 
     @Column(name = "email", nullable = false)
-    public String email;
+    private String email;
 
-    
     @Column(name = "username", nullable = false, unique = true)
-    public String username;
+    private String username;
 
     @Column(name = "password", nullable = false)
-    public String password;
+    private String password;
 
     @Column(name = "firstname", nullable = false)
-    public String firstName;
+    private String firstName;
 
     @Column(name = "lastname", nullable = false)
-    public String lastName;
+    private String lastName;
 
     @Column(name = "is_active", nullable = false)
-    public boolean isActive = true;
+    private boolean isActive = true;
 
     @Column(name = "role", nullable = false)
-    public String role = UserRole.USER.name();
+    private String role = UserRole.USER.name();
 
     @Column(name = "reset_token")
     private String resetToken;
-    
+
     @Column(name = "reset_token_expiry")
     private LocalDateTime resetTokenExpiry;
 
     @Column(name = "bio")
-    public String bio;
+    private String bio;
 
     @Column(name = "phone_number")
-    public String phoneNumber;
+    private String phoneNumber;
 
     @Column(name = "address")
-    public String address;
+    private String address;
 
     @Column(name = "date_of_birth")
-    public String dateOfBirth;
+    private String dateOfBirth;
 
     @Column(name = "last_login")
-    public String lastLogin;
+    private String lastLogin;
 
     @Column(name = "login_attempts")
-    public int loginAttempts = 0;
+    private int loginAttempts = 0;
 
     @Column(name = "profile_image", columnDefinition = "VARCHAR(MAX)")
-    public String profileImage;
+    private String profileImage;
 
+    @JsonIgnore
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private List<Address> addresses = new ArrayList<>();
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private List<Cart> carts = new ArrayList<>();
+
+    @JsonIgnore
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private List<Wishlist> wishlists = new ArrayList<>();
 }
-// Remove the enum from this file. It will be placed in a separate file named userRole.java.

@@ -1,0 +1,26 @@
+{
+  // keep LS on JDK 17 ✅
+  "java.jdt.ls.java.home": "C:\\Program Files\\Java\\jdk-17",
+
+  // known JDKs ✅
+  "java.configuration.runtimes": [
+    { "name": "JavaSE-17", "path": "C:\\Program Files\\Java\\jdk-17", "default": true },
+    { "name": "JavaSE-22", "path": "C:\\Program Files\\Java\\jdk-22" }
+  ],
+
+  // give the language server more heap + keep lombok agent
+  "java.jdt.ls.vmargs": "-Xms256m -Xmx2G -XX:+UseG1GC -XX:+UseStringDeduplication -javaagent:C:\\dev\\tools\\lombok\\lombok-1.18.40.jar",
+
+  // stop auto-downloading sources (fewer huge *-sources.jar to index)
+  "java.sources.download": "never",
+  "maven.downloadSources": false,
+
+  // reduce VS Code's own file watching over .m2
+  "files.watcherExclude": { "**/.m2/**": true },
+  "search.exclude": { "**/.m2/**": true },
+
+  // build config updates: prefer on-demand to avoid constant rescans
+  "java.configuration.updateBuildConfiguration": "interactive",
+
+  "java.compile.nullAnalysis.mode": "automatic"
+}
